@@ -35,6 +35,10 @@ class State(ABC):
     def switch_to(self, state_name: Union[str, None]):
         assert self._machine is not None
         self._machine.set_state(state_name)
+    
+    def get_current_state(self):
+        assert self._machine is not None
+        return self._machine.current_state
 
     @abstractmethod
     def on_enter(self):
@@ -84,7 +88,7 @@ class StateMachine:
             self.states[self.current_state].on_enter()
         else:
             self.current_state = None
-    
+        
     def run(self):
         if self.current_state is not None:
             self.states[self.current_state].on_run()
