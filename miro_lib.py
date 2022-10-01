@@ -18,6 +18,8 @@ class Robot:
     def __init__(self, fake=False) -> None:
         self.fake = fake
 
+        self.energy = 0.0
+
         # connect to robot
         if not fake:
             self.robot = MirocodeInterface(pose_ctrl=False, cliff_reflex=False)
