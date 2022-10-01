@@ -1,8 +1,37 @@
 from typing import Callable, Union, List
 from abc import ABC, abstractmethod
+import time
+
+__all__ = ['Sequential', 'State', 'StateMachine', 'Timer']
 
 
-__all__ = ['Sequential', 'State', 'StateMachine']
+
+class Timer:
+    def __init__(self) -> None:
+        self.last_update = 0
+        self.accumulate_time = 0
+        self.running = False
+        
+    def reset(self):
+        self.accumulate_time = 0
+
+    def start(self):
+        self.running = True
+        self.last_update = time.time()
+
+    def stop(self):
+        self.running = False
+
+    def update(self):
+        if self.running:
+            current_time = time.time()
+            delta = current_time - self.last_update
+            self.accumulate_time += delta
+            self.last_update = current_time
+    
+    def get_time(self) -> float:
+        return self.accumulate_time
+
 
 
 class Sequential:
