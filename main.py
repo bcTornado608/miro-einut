@@ -125,12 +125,16 @@ class StateLieDown(State):
         super().__init__()
         self.robot = robot
         self.last_call = 0
+        self.timer = Timer()
     def on_enter(self):
         self.last_call = time.time()
+        self.timer.reset()
+        self.timer.start()
 
     def on_exit(self):
         pass
     def on_run(self):
+        self.timer.update()
         current_time = time.time()
         delta_time = current_time - self.last_call
         self.last_call = current_time
@@ -141,7 +145,7 @@ class StateLieDown(State):
         if is_touched:
             self.switch_to('interactive')
 
-        if delta_time >= 5:
+        if self.timer.get_time() >= 5:
             self.switch_to('sleep')
         
 
@@ -165,11 +169,13 @@ class StateWake(State):
         pass
     def on_run(self):
         self.timer.update()
+        self.wondering_cd.update()
+
         current_time = time.time()
         delta_time = current_time - self.last_call
         self.last_call = current_time
 
-        if self.timer.get_time() >= 10:
+        if self.timer.get_time() >= 10 and self.robot.energy < 10:
             self.switch_to('lie_down')
             return
         
@@ -183,10 +189,11 @@ class StateWake(State):
             self.switch_to('curious')
             return
 
-        if self.wondering_cd.get_time() > 3:
+        if self.wondering_cd.get_time() > 1:
             self.wondering_cd.reset()
 
             wonder = random.randint(0,1)
+            # wonder = 0
             if wonder == 0:
                 self.switch_to('wondering')
                 return
@@ -219,6 +226,7 @@ class StateWondering(State):
         pass
 
     def on_run(self):
+        self.wondering_timer.update()
         current_time = time.time()
         delta_time = current_time - self.last_call
         self.last_call = current_time
@@ -285,16 +293,17 @@ class StateInteractive(State):
 
 if __name__ == '__main__':
     robot = Robot(fake=True)
+    robot.energy = 10
     machine = StateMachine()
 
     machine.add_state('sleep', StateSleep(robot))
     machine.add_state('wake', StateWake(robot))
     machine.add_state('walk_away', StateWalkAway(robot))
     machine.add_state('scared', StateScared(robot))
-    machine.add_state('lie_down', StateLieDown())
+    machine.add_state('lie_down', StateLieDown(robot))
     machine.add_state('wondering', StateWondering(robot))
     machine.add_state('interactive', StateInteractive())
-    machine.add_state('curious', StateCurious())
+    machine.add_state('curious', StateCurious(robot))
 
     # set start state
     machine.set_state('sleep')
