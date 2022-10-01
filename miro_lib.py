@@ -1,4 +1,5 @@
 import time
+from typing import List
 
 try:
     import miro2 as miro
@@ -10,6 +11,8 @@ try:
 except:
     pass
 
+
+__all__ = ['Robot']
 
 class Robot:
     def __init__(self, fake=False) -> None:
@@ -110,13 +113,13 @@ class Robot:
             return self.robot.time_since_clap()
         return 999
     
-    def get_body_touches(self) -> list[bool]:
+    def get_body_touches(self) -> List[bool]:
         '''true if being touched'''
         if not self.fake:
             return self.robot.read_body_touch_sensor_list()
         return [False for i in range(14)]
     
-    def get_head_touches(self) -> list[bool]:
+    def get_head_touches(self) -> List[bool]:
         '''true if being touched'''
         if not self.fake:
             return self.robot.read_head_touch_sensor_list()

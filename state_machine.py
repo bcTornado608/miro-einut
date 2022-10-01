@@ -1,4 +1,4 @@
-from typing import Callable, Union
+from typing import Callable, Union, List
 from abc import ABC, abstractmethod
 
 
@@ -6,7 +6,7 @@ __all__ = ['Sequential', 'State', 'StateMachine']
 
 
 class Sequential:
-    def __init__(self, functions: list[Callable]) -> None:
+    def __init__(self, functions: List[Callable]) -> None:
         '''functions is a list of functions that are called repeatedly and return true once finished'''
         assert len(functions) > 0
         self.functions = functions
