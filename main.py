@@ -152,16 +152,24 @@ class StateWake(State):
         super().__init__()
         self.robot = robot
         self.last_call = 0
+        self.timer = Timer()
+        self.wondering_cd = Timer()
+
     def on_enter(self):
         self.last_call = time.time()
+        self.timer.start()
+        self.timer.reset()
+        self.wondering_cd.reset()
+        self.wondering_cd.start()
     def on_exit(self):
         pass
     def on_run(self):
+        self.timer.update()
         current_time = time.time()
         delta_time = current_time - self.last_call
         self.last_call = current_time
 
-        if delta_time >= 10:
+        if self.timer.get_time() >= 10:
             self.switch_to('lie_down')
             return
         
@@ -170,15 +178,18 @@ class StateWake(State):
             self.switch_to('interactive')
             return
         
-        is_sounded =self.robot.get_sonar()
-        if (is_sounded < 1) and random.randint(0,1):
+        is_sounded = self.robot.get_last_clap() < 0.5
+        if (is_sounded) and random.randint(0,1):
             self.switch_to('curious')
             return
 
-        wander = random.randint(0,1)
-        if wander == 0:
-            self.switch_to('wandering')
-            return
+        if self.wondering_cd.get_time() > 3:
+            self.wondering_cd.reset()
+
+            wonder = random.randint(0,1)
+            if wonder == 0:
+                self.switch_to('wondering')
+                return
         
 
 
@@ -188,31 +199,31 @@ class StateWondering(State):
         super().__init__()
         self.robot = robot
         self.last_call = 0
+
+        self.wondering_timer = Timer()
+        self.wondering_length = 0
+        self.wondering_angle = 0
+
     def on_enter(self):
         self.last_call = time.time()
-        stop = random.randint(0,3)
+        self.wondering_length = random.randrange(3, 5)
+        self.wondering_angle = random.random() * 90 - 45
+        self.wondering_timer.reset()
+        self.wondering_timer.start()
+
         # head down, turn right, lie on ground
-        self.robot.set_neck(45, 45, 0)
-        
-        while stop != 0:
-            self.robot.drive(0.2, 0)
-            turnhead = random.randint(0,1)
-            if turnhead == 0:
-                self.robot.set_neck(75, 75, 45)
-            self.robot.drive(0.2, 45)
+        self.robot.set_neck(45, 45, self.wondering_angle)
+        self.robot.drive(0.2, self.wondering_angle)
 
     def on_exit(self):
         pass
+
     def on_run(self):
         current_time = time.time()
         delta_time = current_time - self.last_call
         self.last_call = current_time
 
         self.robot.energy -= delta_time
-        if self.robot.energy <= 0:  # sleep 20 seconds
-            # awake by it self
-            self.switch_to('sleep')
-            return
         
         if self.robot.energy <= 5:
             self.switch_to('lie_down')
@@ -222,6 +233,10 @@ class StateWondering(State):
         if is_touched:
             self.switch_to('wake')
             return
+
+        if self.wondering_timer.get_time() >= self.wondering_length:
+            self.robot.drive(0, 0)
+            self.switch_to('wake')
 
 
 class StateCurious(State):
@@ -273,17 +288,20 @@ if __name__ == '__main__':
     machine = StateMachine()
 
     machine.add_state('sleep', StateSleep(robot))
+    machine.add_state('wake', StateWake(robot))
     machine.add_state('walk_away', StateWalkAway(robot))
     machine.add_state('scared', StateScared(robot))
-    machine.add_state('lie_down', StateLieDown(robot))
+    machine.add_state('lie_down', StateLieDown())
     machine.add_state('wondering', StateWondering(robot))
-    machine.add_state('interactive', StateInteractive(robot))
-    machine.add_state('curious', StateCurious(robot))
+    machine.add_state('interactive', StateInteractive())
+    machine.add_state('curious', StateCurious())
 
     # set start state
     machine.set_state('sleep')
 
     while True:
+        print(machine.current_state)
         machine.run()
+        time.sleep(0.2)
 
 
