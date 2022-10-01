@@ -121,12 +121,29 @@ class StateWalkAway(State):
 
 
 class StateLieDown(State):
+    def __init__(self, robot: Robot) -> None:
+        super().__init__()
+        self.robot = robot
+        self.last_call = 0
     def on_enter(self):
-        pass
+        self.last_call = time.time()
+
     def on_exit(self):
         pass
     def on_run(self):
-        pass
+        current_time = time.time()
+        delta_time = current_time - self.last_call
+        self.last_call = current_time
+
+        self.robot.energy += delta_time*0.5
+
+        is_touched = any(self.robot.get_body_touches()) or any(self.robot.get_head_touches())
+        if is_touched:
+            self.switch_to('interactive')
+
+        if delta_time >= 5:
+            self.switch_to('sleep')
+        
 
 
 
@@ -158,7 +175,7 @@ class StateWake(State):
             self.switch_to('curious')
             return
 
-        wander = random.randint(0,1):
+        wander = random.randint(0,1)
         if wander == 0:
             self.switch_to('wandering')
             return
