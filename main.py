@@ -250,4 +250,21 @@ class StateInteractive(State):
 # main function
 
 if __name__ == '__main__':
-    pass
+    robot = Robot(fake=True)
+    machine = StateMachine()
+
+    machine.add_state('sleep', StateSleep(robot))
+    machine.add_state('walk_away', StateWalkAway(robot))
+    machine.add_state('scared', StateScared(robot))
+    machine.add_state('lie_down', StateLieDown(robot))
+    machine.add_state('wondering', StateWondering(robot))
+    machine.add_state('interactive', StateInteractive(robot))
+    machine.add_state('curious', StateCurious(robot))
+
+    # set start state
+    machine.set_state('sleep')
+
+    while True:
+        machine.run()
+
+
