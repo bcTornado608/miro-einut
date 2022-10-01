@@ -225,12 +225,31 @@ class StateWondering(State):
 
 
 class StateCurious(State):
+    def __init__(self, robot: Robot) -> None:
+        super().__init__()
+        self.robot = robot
+        self.last_call = 0
+
     def on_enter(self):
-        pass
+        self.robot.set_neck(45, 45, 0)
+        self.robot.drive(0.5, 45)
     def on_exit(self):
         pass
     def on_run(self):
-        pass
+        current_time = time.time()
+        delta_time = current_time - self.last_call
+        self.last_call = current_time
+
+        self.robot.energy -= delta_time
+        if self.robot.energy <= 0:
+            self.switch_of('sleep')
+            return
+        
+        if self.robot.energy <= 5:
+            self.switch_to('lie_down')
+            return
+        
+        self.switch_to('wake')
 
 
 
