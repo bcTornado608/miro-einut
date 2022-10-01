@@ -23,10 +23,11 @@ class Timer:
         self.running = False
 
     def update(self):
-        current_time = time.time()
-        delta = current_time - self.last_update
-        self.accumulate_time += delta
-        self.last_update = current_time
+        if self.running:
+            current_time = time.time()
+            delta = current_time - self.last_update
+            self.accumulate_time += delta
+            self.last_update = current_time
     
     def get_time(self) -> float:
         return self.accumulate_time
