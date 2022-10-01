@@ -69,6 +69,8 @@ class StateMachine:
     
     def set_bg_state(self, state: State):
         self.bg_state = state
+        if state is not None:
+            state._machine = self
         self.bg_state.on_enter()
     
     def set_state(self, name: Union[str, None]):
