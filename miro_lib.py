@@ -109,10 +109,15 @@ class Robot:
             return self.robot.read_light_sensor(miro.constants.LIGHT_LF)
         return 0.5
     
+
     def get_last_clap(self) -> float:
         '''get seconds since last detected clap'''
         if not self.fake:
-            return self.robot.time_since_clap()
+            ret = self.robot.time_since_clap()
+            if ret is None:
+                return 9999
+            else:
+                return ret
         return 999
     
     def get_body_touches(self) -> List[bool]:
