@@ -1,5 +1,5 @@
 import time
-from typing import List
+from typing import List, Tuple
 
 try:
     import miro2 as miro
@@ -94,7 +94,7 @@ class Robot:
         else:
             return 1.0
 
-    def get_cliff(self) -> tuple[bool, bool]:
+    def get_cliff(self) -> Tuple[bool, bool]:
         '''get left and right cliff sensor. True means there is a cliff'''
         
         if not self.fake:
